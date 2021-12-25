@@ -1,5 +1,6 @@
-drop table if exists orders;
 drop table if exists restaurants;
+drop table if exists orders;
+drop table if exists agg_orders;
 
 create table restaurants
 (
@@ -24,7 +25,7 @@ create table orders
     restaurant_id       text,
     order_date          date,
     order_timestamp     timestamp,
-    number_of_customers text,
+    number_of_customers integer,
     turnover            numeric(15, 2)
 );
 insert into orders (order_id, restaurant_id, order_date, order_timestamp, number_of_customers, turnover)
@@ -32,7 +33,7 @@ select id,
        restaurant_id,
        cast(open_date as date),
        cast(open_date as timestamp),
-       nb_customers,
+       cast(nb_customers as integer),
        cast(cached_price as numeric)
 from raw_orders
 where _fivetran_deleted = 'FALSE'
@@ -52,6 +53,24 @@ group by restaurant_id;
 
 select country, sum(turnover)
 from orders
-join restaurants r on orders.restaurant_id = r.restaurant_id
+         join restaurants r on orders.restaurant_id = r.restaurant_id
 where order_date = '2021-06-21'
 group by country;
+
+
+create table agg_orders
+(
+    restaurant_id       text,
+    order_date          date,
+    turnover            numeric(15, 2),
+    number_of_orders    integer,
+    number_of_customers integer
+);
+insert into agg_orders (restaurant_id, order_date, turnover, number_of_orders, number_of_customers)
+select restaurant_id,
+       order_date,
+       sum(turnover)              as turnover,
+       count(number_of_customers) as number_of_orders,
+       sum(number_of_customers)   as number_of_customers
+from orders
+group by restaurant_id, order_date;
