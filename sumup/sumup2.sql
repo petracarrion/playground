@@ -1,8 +1,5 @@
-drop view if exists orders;
-drop view if exists valid_restaurants;
-drop view if exists valid_orders;
+drop table if exists orders;
 drop table if exists restaurants;
-drop table if exists all_orders;
 
 create table restaurants
 (
@@ -25,18 +22,18 @@ create table orders
 (
     order_id            text,
     restaurant_id       text,
-    number_of_customers text,
-    turnover            numeric(15, 2),
     order_date          date,
-    order_timestamp     timestamp
+    order_timestamp     timestamp,
+    number_of_customers text,
+    turnover            numeric(15, 2)
 );
-insert into orders (order_id, restaurant_id, number_of_customers, turnover, order_date, order_timestamp)
+insert into orders (order_id, restaurant_id, order_date, order_timestamp, number_of_customers, turnover)
 select id,
        restaurant_id,
-       nb_customers,
-       cast(cached_price as numeric),
        cast(open_date as date),
-       cast(open_date as timestamp)
+       cast(open_date as timestamp),
+       nb_customers,
+       cast(cached_price as numeric)
 from raw_orders
 where _fivetran_deleted = 'FALSE'
   and status = 'CLOSED';
