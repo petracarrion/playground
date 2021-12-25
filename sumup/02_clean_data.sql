@@ -1,6 +1,5 @@
 drop table if exists restaurants;
 drop table if exists orders;
-drop table if exists agg_orders;
 
 create table restaurants
 (
@@ -38,39 +37,3 @@ select id,
 from raw_orders
 where _fivetran_deleted = 'FALSE'
   and status = 'CLOSED';
-
-
-select order_id, order_timestamp, turnover
-from orders
-where order_date = '2021-06-21'
-order by order_timestamp desc
-limit 1;
-
-select restaurant_id, sum(turnover)
-from orders
-where order_date = '2021-06-21'
-group by restaurant_id;
-
-select country, sum(turnover)
-from orders
-         join restaurants r on orders.restaurant_id = r.restaurant_id
-where order_date = '2021-06-21'
-group by country;
-
-
-create table agg_orders
-(
-    restaurant_id       text,
-    order_date          date,
-    turnover            numeric(15, 2),
-    number_of_orders    integer,
-    number_of_customers integer
-);
-insert into agg_orders (restaurant_id, order_date, turnover, number_of_orders, number_of_customers)
-select restaurant_id,
-       order_date,
-       sum(turnover)              as turnover,
-       count(number_of_customers) as number_of_orders,
-       sum(number_of_customers)   as number_of_customers
-from orders
-group by restaurant_id, order_date;

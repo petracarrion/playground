@@ -24,3 +24,5 @@ create table raw_orders
     open_date         text,
     close_date        text
 );
+
+-- Copy CSV files to the raw tables
